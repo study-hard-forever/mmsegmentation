@@ -1,3 +1,7 @@
+# 忽略的数据：
+iccv09Data
+stanford_background.tar.gz
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

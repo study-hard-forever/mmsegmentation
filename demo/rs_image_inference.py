@@ -1,4 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+'''
+RSInferencer:
+"Remote sensing inference class" 可以翻译为“遥感推理类”。
+遥感图像处理，可以略过
+'''
 from argparse import ArgumentParser
 
 from mmseg.apis import RSImage, RSInferencer
