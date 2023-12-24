@@ -12,14 +12,14 @@ class AcDataset(BaseSegDataset):
     ``seg_map_suffix`` are both fixed to '.png'.
     """
   
-    # CLASSES = ("_background_","BD_beng","lou_guang","jiao_beng","you_mo_yin","hua_shang","yi_mo")  # AC
-    CLASSES = ("BD_beng","lou_guang","jiao_beng","you_mo_yin","hua_shang","yi_mo")  # AC
+    CLASSES = ("_background_","BD_beng","lou_guang","jiao_beng","you_mo_yin","hua_shang","yi_mo")  # AC
+    # CLASSES = ("BD_beng","lou_guang","jiao_beng","you_mo_yin","hua_shang","yi_mo")  # AC
 
-    # PALETTE = [[0], [1], [2], [3],
-    #            [4], [5],[6]]
-    
-    PALETTE = [[1], [2], [3],
+    PALETTE = [[0], [1], [2], [3],
                [4], [5],[6]]
+    
+    # PALETTE = [[1], [2], [3],
+    #            [4], [5],[6]]
     
     # PALETTE = [[0,0,0], [1,1,1], [2,2,2], [3,3,3],
     #            [4,4,4], [5,5,5],[6,6,6]]  # 调色板仅用来在可视化等处使用，训练的时候没有影响

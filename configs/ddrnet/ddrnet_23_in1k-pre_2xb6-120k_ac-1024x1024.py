@@ -1,87 +1,63 @@
 _base_ = [
     '../_base_/datasets/ac.py',
-    '../_base_/default_runtime.py'
+    '../_base_/default_runtime.py',
 ]
 
 # The class_weight is borrowed from https://github.com/openseg-group/OCNet.pytorch/issues/14 # noqa
 # Licensed under the MIT License
-
-# ["_background_","BD_beng","lou_guang","jiao_beng","you_mo_yin","hua_shang","yi_mo"]  # AC        
-# class_weight = [
-#    0.8, 1.0345, 1.0489, 0.9843, 0.9539, 1.1116, 0.9737
-# ]
-class_weight = None  # 也会报错
-checkpoint_file = 'models/pretrain/pidnet/pidnet-s_imagenet1k_20230306-715e6273.pth'  # noqa
+class_weight = [
+    0.8, 1.0345, 1.0489, 0.9843, 0.9539, 1.1116, 0.9737
+]
+checkpoint = '/home/sylu/workspace/mjg/mmsegmentation/models/pretrain/ddrnet/ddrnet23-in1kpre_3rdparty-9ca29f62.pth'  # noqa
 crop_size = (1024, 1024)
 data_preprocessor = dict(
     type='SegDataPreProcessor',
+    size=crop_size,
     mean=[163.00198485, 182.0198568, 158.71672005000002],
     std=[45.9286161, 46.03267905, 45.45299265],
     bgr_to_rgb=True,
     pad_val=0,
-    seg_pad_val=255,
-    size=crop_size)
+    seg_pad_val=255)
 norm_cfg = dict(type='BN', requires_grad=True)
 model = dict(
     type='EncoderDecoder',
     data_preprocessor=data_preprocessor,
     backbone=dict(
-        type='PIDNet',
+        type='DDRNet',
         in_channels=3,
-        channels=32,
-        ppm_channels=96,
-        num_stem_blocks=2,
-        num_branch_blocks=3,
+        channels=64,
+        ppm_channels=128,
+        norm_cfg=norm_cfg,
+        align_corners=False,
+        init_cfg=dict(type='Pretrained', checkpoint=checkpoint)),
+    decode_head=dict(
+        type='DDRHead',
+        in_channels=64 * 4,
+        channels=128,
+        dropout_ratio=0.,
+        num_classes=7,
         align_corners=False,
         norm_cfg=norm_cfg,
-        act_cfg=dict(type='ReLU', inplace=True),
-        init_cfg=dict(type='Pretrained', checkpoint=checkpoint_file)),
-    decode_head=dict(
-        type='PIDHead',
-        in_channels=128,
-        channels=128,
-        num_classes=7,
-        norm_cfg=norm_cfg,
-        act_cfg=dict(type='ReLU', inplace=True),
-        align_corners=True,
         loss_decode=[
-            dict(
-                type='CrossEntropyLoss',
-                use_sigmoid=False,
-                class_weight=class_weight,
-                loss_weight=0.4),
             dict(
                 type='OhemCrossEntropy',
                 thres=0.9,
                 min_kept=131072,
                 class_weight=class_weight,
                 loss_weight=1.0),
-            dict(type='BoundaryLoss', loss_weight=20.0),
             dict(
                 type='OhemCrossEntropy',
                 thres=0.9,
                 min_kept=131072,
                 class_weight=class_weight,
-                loss_weight=1.0)
+                loss_weight=0.4),
         ]),
+
+    # model training and testing settings
     train_cfg=dict(),
     test_cfg=dict(mode='whole'))
 
-train_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations'),
-    dict(
-        type='RandomResize',
-        scale=(2048, 1024),
-        ratio_range=(0.5, 2.0),
-        keep_ratio=True),
-    dict(type='RandomCrop', crop_size=crop_size, cat_max_ratio=0.75),
-    dict(type='RandomFlip', prob=0.5),
-    dict(type='PhotoMetricDistortion'),
-    dict(type='GenerateEdge', edge_width=4),
-    dict(type='PackSegInputs')
-]
-train_dataloader = dict(batch_size=6, dataset=dict(pipeline=train_pipeline))
+train_dataloader = dict(batch_size=6, num_workers=4)
 
 iters = 120000
 # optimizer
@@ -97,6 +73,7 @@ param_scheduler = [
         end=iters,
         by_epoch=False)
 ]
+
 # training schedule for 120k
 train_cfg = dict(
     type='IterBasedTrainLoop', max_iters=iters, val_interval=iters // 10)
