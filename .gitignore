@@ -2,6 +2,10 @@
 iccv09Data
 stanford_background.tar.gz
 
+demo/pred/
+demo/vis/
+demo/vis_data/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

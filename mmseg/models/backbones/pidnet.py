@@ -469,8 +469,12 @@ class PIDNet(BaseModule):
             Tensor or tuple[Tensor]: If self.training is True, return
                 tuple[Tensor], else return Tensor.
         """
-        w_out = x.shape[-1] // 8
-        h_out = x.shape[-2] // 8
+        # w_out = x.shape[-1] // 8
+        # h_out = x.shape[-2] // 8
+        import math #添加
+
+        # out_size = (x.shape[-2] // 8, x.shape[-1] // 8)  # 注释或删掉183行
+        h_out, w_out  = (math.ceil(x.shape[-2] / 8), math.ceil(x.shape[-1] / 8)) # 改为向上取整
 
         # stage 0-2
         x = self.stem(x)
@@ -483,6 +487,7 @@ class PIDNet(BaseModule):
         comp_i = self.compression_1(x_i)
         x_p = self.pag_1(x_p, comp_i)
         diff_i = self.diff_1(x_i)
+        # print(f'x_d.shape,diff_i.shape,w_out,h_out: {x_d.shape,diff_i.shape,w_out,h_out}')
         x_d += F.interpolate(
             diff_i,
             size=[h_out, w_out],

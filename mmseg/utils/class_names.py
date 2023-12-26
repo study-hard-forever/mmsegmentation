@@ -472,8 +472,15 @@ def bdd100k_palette():
             [255, 0, 0], [0, 0, 142], [0, 0, 70], [0, 60, 100], [0, 80, 100],
             [0, 0, 230], [119, 11, 32]]
 
+def ac_classes():
+    return ["_background_","BD_beng","lou_guang","jiao_beng","you_mo_yin","hua_shang","yi_mo"]
+
+def ac_palette():
+    colors = [(0, 0, 0), (128, 0, 0), (0, 128, 0), (128, 128, 0), (0, 0, 128), (128, 0, 128), (0, 128, 128)]
+    return colors
 
 dataset_aliases = {
+    'ac':['ac'],
     'cityscapes': ['cityscapes'],
     'ade': ['ade', 'ade20k'],
     'voc': ['voc', 'pascal_voc', 'voc12', 'voc12aug'],

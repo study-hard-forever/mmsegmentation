@@ -10,7 +10,7 @@ _base_ = [
 # class_weight = [
 #    0.8, 1.0345, 1.0489, 0.9843, 0.9539, 1.1116, 0.9737
 # ]
-class_weight = None  # 也会报错
+class_weight = None  # 不报错了
 checkpoint_file = 'models/pretrain/pidnet/pidnet-s_imagenet1k_20230306-715e6273.pth'  # noqa
 crop_size = (1024, 1024)
 data_preprocessor = dict(
@@ -99,7 +99,7 @@ param_scheduler = [
 ]
 # training schedule for 120k
 train_cfg = dict(
-    type='IterBasedTrainLoop', max_iters=iters, val_interval=iters // 10)
+    type='IterBasedTrainLoop', max_iters=iters, val_interval=iters // 50)
 val_cfg = dict(type='ValLoop')
 test_cfg = dict(type='TestLoop')
 default_hooks = dict(

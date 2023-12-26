@@ -174,6 +174,14 @@ def show_result_pyplot(model: BaseSegmentor,
     visualizer.dataset_meta = dict(
         classes=model.dataset_meta['classes'],
         palette=model.dataset_meta['palette'])
+    
+    '''
+    直接修改的API（临时）
+    '''
+    colors = [(0, 0, 0), (128, 0, 0), (0, 128, 0), (128, 128, 0), (0, 0, 128), (128, 0, 128), (0, 128, 128)]
+    visualizer.dataset_meta['palette']=colors
+    print(visualizer.dataset_meta)
+    
     visualizer.add_datasample(
         name=title,
         image=image,
