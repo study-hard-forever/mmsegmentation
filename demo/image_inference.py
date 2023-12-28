@@ -151,7 +151,7 @@ def main():
         #                                     result, show=False,withLabels=False)
 
         img_pred_blended = seg_local_visualizer._draw_sem_seg(
-            image, result.pred_sem_seg, classes, palette, withLabels=True
+            image, result.pred_sem_seg, classes, palette, withLabels=False
         )
         img_pred_blended = img_pred_blended[:, :, [2, 1, 0]]  # seg_local_visualizer返回的结果都是RGB图像，但此处使用cv2进行读取与保存，使用的BGR图像，因此此处将RGB通道转换为BGR通道
         
