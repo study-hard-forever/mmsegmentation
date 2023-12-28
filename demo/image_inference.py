@@ -1,80 +1,65 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from argparse import ArgumentParser
-
 from mmseg.apis import inference_model, init_model, show_result_pyplot
-
 import mmcv
-
-import cv2
+import os
 import os.path as osp
+import numpy as np
+import cv2
+import time
+from tqdm import tqdm
 
-'''
+"""
 命令：
 CUDA_VISIBLE_DEVICES=0 python image_inference.py \
-  configs/ac/mask2former_beitv2_adapter_large_896_80k_ac_ms.py  \
-  work_dirs/mask2former_beitv2_adapter_large_896_80k_ac_ms/best_mIoU_iter_72000.pth  \
+  ../configs/ddrnet/ddrnet_23_in1k-pre_2xb6-120k_ac-1024x1024.py  \
+  ../work_dirs/ddrnet_23_in1k-pre_2xb6-120k_ac-1024x1024/best_mIoU_iter_168000.pth  \
   data/VOCdevkit/VOC2007/test_jpg/1_bengbianA_2_bengbianA_srcTray_1_srcIndex_1_DL_result_0_0_3_BengBian.jpg \
   --palette ac  \
-  --out /home/sylu/workspace/mjg/nelson/data/ViT-Adapter_test_230713_Boston_AC_Test_NG
-'''
+  --out /home/sylu/workspace/mjg/mmsegmentation/demo/results_iter_168000
+"""
+
+
 def main():
     parser = ArgumentParser()
-    parser.add_argument('config', help='Config file')
-    parser.add_argument('checkpoint', help='Checkpoint file')
-    parser.add_argument('img', help='Image file')
-    parser.add_argument('--out', type=str, default="results_iter_80000", help='out dir')
+    parser.add_argument("config", help="Config file")
+    parser.add_argument("checkpoint", help="Checkpoint file")
+    parser.add_argument("img", help="Image file")
+    parser.add_argument("--out", type=str, default="results_iter_80000", help="out dir")
+    parser.add_argument("--device", default="cuda:0", help="Device used for inference")
     parser.add_argument(
-        '--device', default='cuda:0', help='Device used for inference')
+        "--palette",
+        default="cityscapes",
+        help="Color palette used for segmentation map",
+    )
     parser.add_argument(
-        '--palette',
-        default='cityscapes',
-        help='Color palette used for segmentation map')
-    parser.add_argument(
-        '--opacity',
+        "--opacity",
         type=float,
         default=0.5,
-        help='Opacity of painted segmentation map. In (0, 1] range.')
+        help="Opacity of painted segmentation map. In (0, 1] range.",
+    )
     args = parser.parse_args()
 
     # build the model from a config file and a checkpoint file
-    
     model = init_model(args.config, args.checkpoint, device=args.device)
-    
-    '''
-    args.out = "demo"  # 单张测试图的时候就放在demo文件夹即可
-    # test a single image
-    result = inference_segmentor(model, args.img)
-    # show the results
-    if hasattr(model, 'module'):
-        model = model.module
-    img = model.show_result(args.img, result,
-                            palette=get_palette(args.palette),
-                            show=False, opacity=args.opacity)
-    mmcv.mkdir_or_exist(args.out)
-    out_path = osp.join(args.out, osp.basename(args.img))
-    cv2.imwrite(out_path, img)
-    print(f"Result is save at {out_path}")
-    '''        
-        
-    
+
     # 遍历文件夹
     # test_jpg_path = r'data/VOCdevkit/VOC2007/test_jpg'
     # test_jpg_path = r'data/test'
-    test_jpg_path = r'/home/sylu/workspace/mjg/nelson/data/NG_Cropped'
-    import os
-    import numpy as np
-    import time
-    from tqdm import tqdm
+    test_jpg_path = r"/home/sylu/workspace/mjg/nelson/data/NG_Cropped"
+
     imgs = os.listdir(test_jpg_path)
     for img_path in tqdm(imgs):
-        img_path = os.path.join(test_jpg_path,img_path)
+        img_path = os.path.join(test_jpg_path, img_path)
         image = cv2.imread(img_path)  # 此处既然已经读取了原图，后续inference_model传入仅需将读取后的图像传给模型即可
-        
+
         start = time.time()
         result = inference_model(model, image)
         end = time.time()
-        print(f'推理时间： {end-start}秒')  # 以秒为单位  此处由于模型以及数据文件均较大，推理时间由14~18秒不等（后续稳定在14~15秒左右），显存占用： 9154MiB / 32768MiB
-        '''
+        print(
+            f"推理时间： {end-start}秒"
+        )  # 以秒为单位  此处由于模型以及数据文件均较大，推理时间由14~18秒不等（后续稳定在14~15秒左右），显存占用： 9154MiB / 32768MiB
+        """
         5%|████▌                                                                                         | 20/410 [05:30<1:40:35, 15.48s/it]推理时间： 14.2584068775177秒
         Result is save at results_iter_80000/0607-1216_OK_srcTray_3_srcIndex_29_ACSYM_acqName_1_5c_2_Barcode_7cd304644e4947f5_0_0_test.jpg
         5%|████▊                                                                                         | 21/410 [05:45<1:40:09, 15.45s/it]推理时间： 14.250216960906982秒
@@ -90,9 +75,9 @@ def main():
         Result is save at results_iter_80000/0605-2053_OK_srcTray_14_srcIndex_32_ACSYM_acqName_0_5c_2_Barcode_7cd3046450959765_202_202_0_1_test.jpg
         10%|█████████▊                                                                                    | 43/410 [11:23<1:33:43, 15.32s/it]推理时间： 14.195263624191284秒
         Result is save at results_iter_80000/0605-2053_OK_srcTray_11_srcIndex_39_ACSYM_acqName_0_5c_2_Barcode_7cd30464509e692c_77_77_1_1_test.jpg
-        '''
-        
-        '''
+        """
+
+        """
         补充——deeplabv3+速度：
         单卡推理速度如下：
         1%|█                                     | 1/122 [00:09<18:14,  9.04s/it]推理时间： 0.5354411602020264秒
@@ -128,98 +113,125 @@ def main():
         <class 'numpy.ndarray'> <class 'numpy.ndarray'> <class 'numpy.ndarray'>
         (3330, 1777, 3) (3330, 1777, 3) (3330, 3554, 3)
         17%|████████████████████████▋                 | 325/1922 [04:48<25:02,  1.06it/s]推理时间： 0.10715985298156738秒
-        '''
-                
-        '''仅保存mask图像
-        print(f'image类型：{type(image)}, result类型：{type(result[0])}')  # 返回的结果是list类型的，每个对象为numpy.ndarray图像的mask结果
-        print(f'image形状：{image.shape}, result形状：{result[0].shape}')
-        print(np.unique(result[0]))  # 统计像素值
-        mmcv.mkdir_or_exist(args.out)
-        out_path = osp.join(args.out, osp.basename(img_path))
-        cv2.imwrite(out_path, result[0])
-        print(f"Result is save at {out_path}")
-        continue  # 仅保存mask结果图后续的内容不要了
-        '''
+        """
         from mmseg.structures import SegDataSample
         from mmseg.visualization import SegLocalVisualizer
-        seg_local_visualizer = SegLocalVisualizer(
-            vis_backends=[dict(type='LocalVisBackend')],
-            save_dir='./')
-        seg_local_visualizer.dataset_meta = dict(
-        classes=("_background_","BD_beng","lou_guang","jiao_beng","you_mo_yin","hua_shang","yi_mo"),
-        palette=[(0, 0, 0), (128, 0, 0), (0, 128, 0), (128, 128, 0), (0, 0, 128), (128, 0, 128), (0, 128, 128)])
 
+        seg_local_visualizer = SegLocalVisualizer(
+            vis_backends=[dict(type="LocalVisBackend")], save_dir="./"
+        )
+
+        classes = [
+            "_background_",
+            "BD_beng",
+            "lou_guang",
+            "jiao_beng",
+            "you_mo_yin",
+            "hua_shang",
+            "yi_mo",
+        ]
+
+        palette = [
+            (0, 0, 0),
+            (128, 0, 0),
+            (0, 128, 0),
+            (128, 128, 0),
+            (0, 0, 128),
+            (128, 0, 128),
+            (0, 128, 128),
+        ]
+
+        seg_local_visualizer.dataset_meta = dict(classes=classes, palette=palette)
+        
         # 当`show=True`时，直接显示结果，
         # 当 `show=False`时，结果将保存在本地文件夹中。
-        out_file = ''
-        seg_local_visualizer.add_datasample(out_file, image,
-                                            result, show=False,withLabels=False)
-        
-        # # 获得推理的mask图像
-        # img_zero = np.zeros(image.shape)
-        # pre_mask = model.show_result(img_zero, result,
-        #                         palette=get_palette(args.palette),
-        #                         show=False, opacity=args.opacity)
+        out_file = ""
+        # 直接保存融合图像
+        # seg_local_visualizer.add_datasample(out_file, image,
+        #                                     result, show=False,withLabels=False)
+
+        img_pred_blended = seg_local_visualizer._draw_sem_seg(
+            image, result.pred_sem_seg, classes, palette, withLabels=True
+        )
+        img_pred_blended = img_pred_blended[:, :, [2, 1, 0]]  # seg_local_visualizer返回的结果都是RGB图像，但此处使用cv2进行读取与保存，使用的BGR图像，因此此处将RGB通道转换为BGR通道
         
         # 直接对获得推理的mask图像进行染色得到可视化的预测结果（预测的mask为result[0]）（单张图像依次推理的情况下）
-        colors = [(0, 0, 0), (128, 0, 0), (0, 128, 0), (128, 128, 0), (0, 0, 128), (128, 0, 128), (0, 128, 128)]  # 每一类别的标签（这里保证mask与预测图颜色一致）
-        orininal_h  = image.shape[0]
-        orininal_w  = image.shape[1]
-        pre_mask = np.reshape(np.array(colors, np.uint8)[np.reshape(result[0], [-1])], [orininal_h, orininal_w, -1])
+        colors = [
+            (0, 0, 0),
+            (128, 0, 0),
+            (0, 128, 0),
+            (128, 128, 0),
+            (0, 0, 128),
+            (128, 0, 128),
+            (0, 128, 128),
+        ]  # 每一类别的标签（这里保证mask与预测图颜色一致）
+        orininal_h = image.shape[0]
+        orininal_w = image.shape[1]
+
+        # 获得推理的mask图像
+        pre_mask = result.pred_sem_seg.cpu().data
+        pre_mask = np.reshape(
+            np.array(colors, np.uint8)[np.reshape(pre_mask, [-1])],
+            [orininal_h, orininal_w, -1],
+        )
         pre_mask = pre_mask[:, :, [2, 1, 0]]
-        
-        mmcv.mkdir_or_exist(args.out)
-        out_path = osp.join(args.out, osp.basename(img_path))
-        # cv2.imwrite(out_path, img)
+
+        # os.makedirs(args.out, exist_ok=True)
+        # out_path = osp.join(args.out, osp.basename(img_path))
+        # cv2.imwrite(out_path, pre_mask)
         # print(f"Result is save at {out_path}")
-        
-        '''注：一与二选其一
+
+        """注：一与二选其一
         一、此处将原图与融合后的图像、结果图共三张图水平堆叠在一起（适用于没有mask的test图像）
         顺序如下：
         原图  结果图与原图融合后的图像 结果图
-        '''
         """
+        """"""
         # 转换为 NumPy 数组
         np_image = np.array(image)  # 原图
-        np_r_image = np.array(img)  # 结果图与原图融合后的图像 结果图
-        
+        np_r_image = np.array(img_pred_blended)  # 结果图与原图融合后的图像 结果图
+
         stacked_image = np.hstack((np_image, np_r_image, pre_mask))
 
         # 保存图像为文件（例如JPEG格式）
+        os.makedirs(args.out, exist_ok=True)
+        out_path = osp.join(args.out, osp.splitext(osp.basename(img_path))[0] + ".jpg")
         cv2.imwrite(out_path, stacked_image)
         print(f"Result is save at {out_path}")
+
         """
-        
-        '''
         此处增加该段代码是为了做模型对比，堆叠顺序为:结果图与原图融合后的图像 结果图（纵向堆叠）
-        '''
+        """
+        """
         # 首先对返回内容进行了修改，加了判断条件以判断结果中是否存在NG缺陷
-        pixel = np.unique(result[0])  # 统计预测结果的像素值
+        pixel = np.unique(pre_mask)  # 统计预测结果的像素值
         NG = False  # 判断是否存在缺陷
         if pixel.any():  # any函数，任意一个元素不为0，输出为True（有缺陷）
             NG = True
         if NG:
-            save_path = osp.join(args.out, 'NG', osp.basename(img_path))
+            save_path = osp.join(args.out, 'NG', osp.splitext(osp.basename(img_path))[0]+'.jpg')
         else:
-            save_path = osp.join(args.out, 'OK', osp.basename(img_path))
+            save_path = osp.join(args.out, 'OK', osp.splitext(osp.basename(img_path))[0]+'.jpg')
                     
         # 转换为 NumPy 数组
-        np_r_image = np.array(img)  # 结果图与原图融合后的图像
+        np_r_image = np.array(image)  # 结果图与原图融合后的图像
         
         stacked_image = np.vstack((np_r_image, pre_mask))
 
         # 保存图像为文件（例如JPEG格式）
+        os.makedirs(osp.join(args.out, 'NG'), exist_ok=True)
+        os.makedirs(osp.join(args.out, 'OK'), exist_ok=True)
         cv2.imwrite(save_path, stacked_image)
         print(f"Result is save at {save_path}")
-        
-        
-        '''注：一与二选其一
+        """
+
+        """注：一与二选其一
         二、此处将原图/标签与结果图与原图融合后的图像/结果图堆叠在一起（适用于有mask的val/test图像）
         顺序如下：
         原图  结果图与原图融合后的图像
         标签  结果图
-        '''
-        
+        """
+
         """
         # 转换为 NumPy 数组
         np_image = np.array(image)  # 原图
@@ -303,6 +315,7 @@ def main():
         else:
             print("两张图像的形状不匹配，无法水平堆叠。")
         """
-    
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     main()

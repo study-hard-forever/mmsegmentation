@@ -5,6 +5,7 @@ stanford_background.tar.gz
 demo/pred/
 demo/vis/
 demo/vis_data/
+demo/results_iter_168000/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
