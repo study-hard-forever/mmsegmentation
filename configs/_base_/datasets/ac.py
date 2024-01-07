@@ -1,6 +1,7 @@
 # dataset settings
 dataset_type = 'AcDataset'
-data_root = 'data/VOCdevkit/VOC2007'
+# data_root = 'data/VOCdevkit/VOC2007'
+data_root = 'data/VOCdevkit/VOC2007'  # 理应分开，但由于复制不小心直接合并了，幸好文件名不一致，可以直接进行训练（txt文件已经覆盖为最新的数据）
 crop_size = (1024, 1024)
 train_pipeline = [
     dict(type='LoadImageFromFile'),

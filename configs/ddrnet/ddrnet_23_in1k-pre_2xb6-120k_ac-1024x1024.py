@@ -5,8 +5,12 @@ _base_ = [
 
 # The class_weight is borrowed from https://github.com/openseg-group/OCNet.pytorch/issues/14 # noqa
 # Licensed under the MIT License
+# class_weight = [
+#     0.8, 1.0345, 1.0489, 0.9843, 0.9539, 1.1116, 0.9737
+# ]
+# 类别如下：classes=("_background_","BD_beng","lou_guang", "you_mo_yin","hua_shang","yi_mo")
 class_weight = [
-    0.8, 1.0345, 1.0489, 0.9843, 0.9539, 1.1116, 0.9737
+    0.8, 1.0345, 1.0489, 0.9943, 1.1116, 0.9737
 ]
 checkpoint = '/home/sylu/workspace/mjg/mmsegmentation/models/pretrain/ddrnet/ddrnet23-in1kpre_3rdparty-9ca29f62.pth'  # noqa
 crop_size = (1024, 1024)
@@ -35,7 +39,8 @@ model = dict(
         in_channels=64 * 4,
         channels=128,
         dropout_ratio=0.,
-        num_classes=7,
+        # num_classes=7,
+        num_classes=6,
         align_corners=False,
         norm_cfg=norm_cfg,
         loss_decode=[
@@ -59,8 +64,8 @@ model = dict(
 
 train_dataloader = dict(batch_size=6, num_workers=4)
 
-# iters = 120000
-iters = 240000
+iters = 120000
+# iters = 240000  # 微调用的
 # optimizer
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0005)
 optim_wrapper = dict(type='OptimWrapper', optimizer=optimizer, clip_grad=None)
