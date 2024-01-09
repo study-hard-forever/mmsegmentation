@@ -16,7 +16,7 @@ CUDA_VISIBLE_DEVICES=0 python image_inference.py \
   ../work_dirs/ddrnet_23_in1k-pre_2xb6-120k_ac-1024x1024/best_mIoU_iter_168000.pth  \
   data/VOCdevkit/VOC2007/test_jpg/1_bengbianA_2_bengbianA_srcTray_1_srcIndex_1_DL_result_0_0_3_BengBian.jpg \
   --palette ac  \
-  --out /home/sylu/workspace/mjg/mmsegmentation/demo/results_iter_168000
+  --out /home/sylu/workspace/mjg/mmsegmentation/demo/results_iter_120000
 """
 
 
@@ -121,11 +121,30 @@ def main():
             vis_backends=[dict(type="LocalVisBackend")], save_dir="./"
         )
 
+        # classes = [
+        #     "_background_",
+        #     "BD_beng",
+        #     "lou_guang",
+        #     "jiao_beng",
+        #     "you_mo_yin",
+        #     "hua_shang",
+        #     "yi_mo",
+        # ]
+
+        # palette = [
+        #     (0, 0, 0),
+        #     (128, 0, 0),
+        #     (0, 128, 0),
+        #     (128, 128, 0),
+        #     (0, 0, 128),
+        #     (128, 0, 128),
+        #     (0, 128, 128),
+        # ]
+
         classes = [
             "_background_",
             "BD_beng",
             "lou_guang",
-            "jiao_beng",
             "you_mo_yin",
             "hua_shang",
             "yi_mo",
@@ -135,12 +154,10 @@ def main():
             (0, 0, 0),
             (128, 0, 0),
             (0, 128, 0),
-            (128, 128, 0),
             (0, 0, 128),
             (128, 0, 128),
             (0, 128, 128),
         ]
-
         seg_local_visualizer.dataset_meta = dict(classes=classes, palette=palette)
         
         # 当`show=True`时，直接显示结果，
@@ -156,11 +173,20 @@ def main():
         img_pred_blended = img_pred_blended[:, :, [2, 1, 0]]  # seg_local_visualizer返回的结果都是RGB图像，但此处使用cv2进行读取与保存，使用的BGR图像，因此此处将RGB通道转换为BGR通道
         
         # 直接对获得推理的mask图像进行染色得到可视化的预测结果（预测的mask为result[0]）（单张图像依次推理的情况下）
+        # colors = [
+        #     (0, 0, 0),
+        #     (128, 0, 0),
+        #     (0, 128, 0),
+        #     (128, 128, 0),
+        #     (0, 0, 128),
+        #     (128, 0, 128),
+        #     (0, 128, 128),
+        # ]  # 每一类别的标签（这里保证mask与预测图颜色一致）
+        
         colors = [
             (0, 0, 0),
             (128, 0, 0),
             (0, 128, 0),
-            (128, 128, 0),
             (0, 0, 128),
             (128, 0, 128),
             (0, 128, 128),

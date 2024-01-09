@@ -6,6 +6,8 @@ demo/pred/
 demo/vis/
 demo/vis_data/
 demo/results_iter_168000/
+demo/hello.jpg
+demo/results_iter_120000/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
